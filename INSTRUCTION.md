@@ -171,10 +171,6 @@ You are free to define two parameters here.
 
 Define a function such that the grass blades in the bucket closest to the camera are kept while an increasing number of grass blades are culled with each farther bucket.
 
-#### Occlusion culling (extra credit)
-
-This type of culling only makes sense if our scene has additional objects aside from the plane and the grass blades. We want to cull grass blades that are occluded by other geometry. Think about how you can use a depth map to accomplish this!
-
 ### Tessellating Bezier curves into grass blades
 
 In this project, you should pass in each Bezier curve as a single patch to be processed by your grass graphics pipeline. You will tessellate this patch into a quad with a shape of your choosing (as long as it looks sufficiently like grass of course). The paper has some examples of grass shapes you can use as inspiration.
@@ -183,9 +179,23 @@ In the tessellation control shader, specify the amount of tessellation you want 
 
 The generated vertices will be passed to the tessellation evaluation shader, where you will place the vertices in world space, respecting the width, height, and orientation information of each blade. Once you have determined the world space position of each vector, make sure to set the output `gl_Position` in clip space!
 
-** Extra Credit**: Tessellate to varying levels of detail as a function of how far the grass blade is from the camera. For example, if the blade is very far, only generate four vertices in the tessellation control shader.
+To build more intuition on how tessellation works, I highly recommend playing with the [HelloTessellation sample](https://github.com/CIS565-Fall-2017/Vulkan-Samples/tree/master/samples/5_helloTessellation) and reading this [tutorial on tessellation](https://ogldev.org/www/tutorial30/tutorial30.html).
 
-To build more intuition on how tessellation works, I highly recommend playing with the [helloTessellation sample](https://github.com/CIS565-Fall-2017/Vulkan-Samples/tree/master/samples/5_helloTessellation) and reading this [tutorial on tessellation](https://ogldev.org/www/tutorial30/tutorial30.html).
+## Extra Credit  
+
+These extra credit are for reference only. It is encouraged to come up with your own idea! 
+
+### LOD  
+Tessellate to varying levels of detail as a function of how far the grass blade is from the camera. For example, if the blade is very far, only generate four vertices in the tessellation control shader. You can experiment with different numbers of vertices and distance to see how does
+
+### Occlusion culling
+This type of culling only makes sense if our scene has additional objects aside from the plane and the grass blades. To receive this extra credit, you should first add more geometry in the scene (Cube, sphere, etc.). Then, cull grass blades that are occluded by other geometry. Hint: you can use a depth map to accomplish this!
+
+### Interactive Grass
+You can make the demo interactive by adding a GUI (e.g., using ImGui) to control parameters like wind force and direction. You could also add a controllable geometry (like a sphere) that physically interacts with the grass, pushing blades aside as it moves.
+
+### Better rendering  
+Enhance the final render by adding features like a skybox to create an immersive background, or by applying more sophisticated shading techniques to the grass for better lighting and color variation. You can check recent GDC on grass rendering for this. One good example is [Procedural Grass in 'Ghost of Tsushima'](https://www.youtube.com/watch?v=Ibe1JBF5i5Y).
 
 ## Resources
 
