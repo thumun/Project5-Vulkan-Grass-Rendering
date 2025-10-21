@@ -21,8 +21,8 @@ struct Blade {
     vec4 up;
 };
 
-layout (set = 2, binding = 0) buffer InputGrass {
-    Blade inputGrass[];
+layout (set = 2, binding = 0) buffer GrassBlades {
+    Blade grassBlades[];
 };
 
 layout (set = 2, binding = 1) buffer ValidGrass {
@@ -71,10 +71,10 @@ void main() {
 	// You want to write the visible blades to the buffer without write conflicts between threads
 
     // temp setup to get grass to render 
-    Blade inputBlade = inputGrass[index];
+    Blade blade = grassBlades[index];
 
     // adds contents of data to mem (2nd param to first)
     // returns original content of mem before addition (so vertCount - 1)
     uint culledIndex = atomicAdd(numBlades.vertexCount, 1);
-    validGrass[culledIndex] = inputBlade;
+    validGrass[culledIndex] = blade;
 }
