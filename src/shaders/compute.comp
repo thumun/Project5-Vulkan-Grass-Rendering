@@ -21,13 +21,13 @@ struct Blade {
     vec4 up;
 };
 
-layout (set = 2, binding = 0) buffer inputGrass {
-    Blade blades[];
-}
+layout (set = 2, binding = 0) buffer InputGrass {
+    Blade inputGrass[];
+};
 
-layout (set = 2, binding = 1) buffer validGrass {
-    Blade blades[];
-}
+layout (set = 2, binding = 1) buffer ValidGrass {
+    Blade validGrass[];
+};
 
 layout(set = 2, binding = 2) buffer NumBlades {
  	  uint vertexCount;   // Write the number of blades remaining here
@@ -75,7 +75,6 @@ void main() {
 
     // adds contents of data to mem (2nd param to first)
     // returns original content of mem before addition (so vertCount - 1)
-    uint culledIndex = atomicAdd(NumBlades.vertexCount, 1);
+    uint culledIndex = atomicAdd(numBlades.vertexCount, 1);
     validGrass[culledIndex] = inputBlade;
-
 }
