@@ -355,10 +355,10 @@ void Renderer::CreateGrassDescriptorSets() {
     // TODO: Create Descriptor sets for the grass.
     // This should involve creating descriptor sets which point to the model matrix of each group of grass blades
     
-    grassDescriptorSets.resize(scene->GetModels().size());
+    grassDescriptorSets.resize(scene->GetBlades().size());
 
     // Describe the desciptor set
-    VkDescriptorSetLayout layouts[] = { computeDescriptorSetLayout };
+    VkDescriptorSetLayout layouts[] = { modelDescriptorSetLayout };
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -373,24 +373,18 @@ void Renderer::CreateGrassDescriptorSets() {
     std::vector<VkWriteDescriptorSet> descriptorWrites(grassDescriptorSets.size());
 
     for (uint32_t i = 0; i < scene->GetBlades().size(); ++i) {
-        VkDescriptorBufferInfo modelBufferInfo = {};
-        modelBufferInfo.buffer = scene->GetBlades()[i]->GetModelBuffer();
-        modelBufferInfo.offset = 0;
-        modelBufferInfo.range = sizeof(ModelBufferObject);
-
-        // Bind image and sampler resources to the descriptor
-        VkDescriptorImageInfo imageInfo = {};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = scene->GetModels()[i]->GetTextureView();
-        imageInfo.sampler = scene->GetModels()[i]->GetTextureSampler();
+        VkDescriptorBufferInfo grassBufferInfo = {};
+        grassBufferInfo.buffer = scene->GetBlades()[i]->GetModelBuffer();
+        grassBufferInfo.offset = 0;
+        grassBufferInfo.range = sizeof(ModelBufferObject);
 
         descriptorWrites[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[i].dstSet = modelDescriptorSets[i];
+        descriptorWrites[i].dstSet = grassDescriptorSets[i];
         descriptorWrites[i].dstBinding = 0;
         descriptorWrites[i].dstArrayElement = 0;
         descriptorWrites[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         descriptorWrites[i].descriptorCount = 1;
-        descriptorWrites[i].pBufferInfo = &modelBufferInfo;
+        descriptorWrites[i].pBufferInfo = &grassBufferInfo;
         descriptorWrites[i].pImageInfo = nullptr;
         descriptorWrites[i].pTexelBufferView = nullptr;
     }
@@ -467,7 +461,7 @@ void Renderer::CreateComputeDescriptorSets() {
         descriptorWrites[3 * i].dstSet = computeDescriptorSets[i];
         descriptorWrites[3 * i].dstBinding = 0;
         descriptorWrites[3 * i].dstArrayElement = 0;
-        descriptorWrites[3 * i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[3 * i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         descriptorWrites[3 * i].descriptorCount = 1;
         descriptorWrites[3 * i].pBufferInfo = &grassBladesBufferInfo;
         descriptorWrites[3 * i].pImageInfo = nullptr;
@@ -483,7 +477,7 @@ void Renderer::CreateComputeDescriptorSets() {
         descriptorWrites[(3 * i) + 1].dstSet = computeDescriptorSets[i];
         descriptorWrites[(3 * i) + 1].dstBinding = 1;
         descriptorWrites[(3 * i) + 1].dstArrayElement = 0;
-        descriptorWrites[(3 * i) + 1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[(3 * i) + 1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         descriptorWrites[(3 * i) + 1].descriptorCount = 1;
         descriptorWrites[(3 * i) + 1].pBufferInfo = &validGrassBufferInfo;
         descriptorWrites[(3 * i) + 1].pImageInfo = nullptr;
@@ -491,7 +485,7 @@ void Renderer::CreateComputeDescriptorSets() {
 
         // num blades
         VkDescriptorBufferInfo numBladesBufferInfo = {};
-        numBladesBufferInfo.buffer = scene->GetBlades()[i]->GetBladesBuffer();
+        numBladesBufferInfo.buffer = scene->GetBlades()[i]->GetNumBladesBuffer();
         numBladesBufferInfo.offset = 0;
         numBladesBufferInfo.range = sizeof(BladeDrawIndirect);
 
@@ -499,7 +493,7 @@ void Renderer::CreateComputeDescriptorSets() {
         descriptorWrites[(3 * i) + 2].dstSet = computeDescriptorSets[i];
         descriptorWrites[(3 * i) + 2].dstBinding = 2;
         descriptorWrites[(3 * i) + 2].dstArrayElement = 0;
-        descriptorWrites[(3 * i) + 2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[(3 * i) + 2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         descriptorWrites[(3 * i) + 2].descriptorCount = 1;
         descriptorWrites[(3 * i) + 2].pBufferInfo = &numBladesBufferInfo;
         descriptorWrites[(3 * i) + 2].pImageInfo = nullptr;
@@ -1132,7 +1126,8 @@ void Renderer::RecordCommandBuffers() {
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
             // TODO: Bind the descriptor set for each grass blades model
-            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 2, 1, &grassDescriptorSets[j], 0, nullptr);
+            // why does 2 break but 1 work??
+            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &computeDescriptorSets[j], 0, nullptr);
 
             // Draw
             // TODO: Uncomment this when the buffers are populated
