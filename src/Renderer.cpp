@@ -469,7 +469,7 @@ void Renderer::CreateComputeDescriptorSets() {
 
         // valid grass blades
         VkDescriptorBufferInfo validGrassBufferInfo = {};
-        validGrassBufferInfo.buffer = scene->GetBlades()[i]->GetBladesBuffer();
+        validGrassBufferInfo.buffer = scene->GetBlades()[i]->GetCulledBladesBuffer();
         validGrassBufferInfo.offset = 0;
         validGrassBufferInfo.range = sizeof(Blade) * NUM_BLADES;
 
@@ -1026,10 +1026,10 @@ void Renderer::RecordComputeCommandBuffer() {
     vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 1, 1, &timeDescriptorSet, 0, nullptr);
 
     // TODO: For each group of blades bind its descriptor set and dispatch
-    for (uint32_t i = 0; i < scene->GetBlades().size(); ++i) {
-        vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 2, 1, &grassDescriptorSets[i], 0, nullptr);
+    for (uint32_t i = 0; i < computeDescriptorSets.size(); ++i) {
+        vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 2, 1, &computeDescriptorSets[i], 0, nullptr);
         // num_blades or count of total blades ?? 
-        vkCmdDispatch(computeCommandBuffer, (NUM_BLADES/WORKGROUP_SIZE), 1, 1);
+        vkCmdDispatch(computeCommandBuffer, ((NUM_BLADES + WORKGROUP_SIZE -1)/WORKGROUP_SIZE), 1, 1);
     }
 
     // ~ End recording ~
@@ -1127,7 +1127,7 @@ void Renderer::RecordCommandBuffers() {
 
             // TODO: Bind the descriptor set for each grass blades model
             // why does 2 break but 1 work??
-            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &computeDescriptorSets[j], 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipelineLayout, 1, 1, &grassDescriptorSets[j], 0, nullptr);
 
             // Draw
             // TODO: Uncomment this when the buffers are populated
