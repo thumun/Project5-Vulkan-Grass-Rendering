@@ -17,15 +17,16 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color
 
-    vec3 lightPos = normalize(vec3(0.0, 1.0, 0.0));
-    float intensity = clamp(dot(normalize(in_normal), lightPos), 0.0, 1.0);
-
-    //vec3 diffuseColor = vec3();
-    // add ambient?
+    vec3 lightPos = normalize(vec3(0.0, 5.0, 0.0));
+    float intensity = clamp(dot(normalize(in_normal), normalize(in_pos - lightPos)), 0.0, 1.0);
     
     vec3 top = vec3(0.82, 0.859, 0.537);
     vec3 bottom = vec3(0.23, 0.361, 0.141);
-    vec3 color = vec3(bottom + in_pos.y * (top - bottom)) * intensity;
+    vec3 diffuseColor = vec3(bottom + in_pos.y * (top - bottom));
+
+    float ambient = 0.2;
+
+    vec3 color = diffuseColor * (ambient + intensity);
 
     outColor = vec4(color, 1.0);
     

@@ -38,7 +38,7 @@ void main() {
     // might have to change to right
     //vec3 t1 = normalize(cross(v1, up));
 
-    float orientation = in_v1[0].w;
+    float orientation = in_v0[0].w;
     vec3 t1 = normalize(vec3(cos(orientation), 0, -sin(orientation)));
 
     float width = in_v2[0].w;

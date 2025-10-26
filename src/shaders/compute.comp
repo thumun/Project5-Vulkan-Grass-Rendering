@@ -15,10 +15,10 @@ layout(set = 1, binding = 0) uniform Time {
 };
 
 struct Blade {
-    vec4 v0;
-    vec4 v1;
-    vec4 v2;
-    vec4 up;
+    vec4 v0; // pos of grass blade on geom, w = orientation
+    vec4 v1; // bezier curve guide wrt up, w = height
+    vec4 v2; // guide for forces, w = width
+    vec4 up; // up (corresponds to norm of geom that v0 is on, w = stiffness
 };
 
 layout (set = 2, binding = 0) buffer GrassBlades {
@@ -55,6 +55,12 @@ bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
+// vary with time 
+// use sinusoidal func
+vec3 simulateWind(vec3 v0, float t) {
+    return vec3(1.0f);
+}
+
 void main() {
 	// Reset the number of blades to 0
     uint index = gl_GlobalInvocationID.x; 
@@ -63,15 +69,78 @@ void main() {
 	}
 	barrier(); // Wait till all threads reach this point
 
+    Blade blade = grassBlades[index];
+
     // TODO: Apply forces on every blade and update the vertices in the buffer
+
+    vec3 right = vec3(sin(blade.v0.w), 0.0f, cos(blade.v0.w));
+    vec3 front = cross(right, blade.up.xyz);
+
+    // Recovery 
+    // orig pose of v2 is straight up from v0 
+    vec3 Iv2 = blade.v0.xyz + (blade.v1.w * blade.up.xyz); 
+    vec3 r = (blade.v2.xyz) * blade.up.w;
+
+    // Gravity 
+    float mass = 1.0f;
+    // d.xyz = gravity dir 
+    // d.w = acceleration 
+    vec4 d = vec4(0.0f, -1.0f, 0.0f, 9.8f);
+
+    // user defined param so setting to 0.5
+    float t = 0.5f;
+
+    vec3 gE = mass * (normalize(d.xyz) * d.w * (1 - t) + t);
+    vec3 gF = 0.25f * abs(gE) * front;
+    vec3 g = gE + gF;
+
+    // Wind 
+    vec3 windInfluence = simulateWind(blade.v0.xyz, deltaTime);
+    float dirAlignment = 1 - abs(dot(normalize(windInfluence), normalize(blade.v2.xyz - blade.v0.xyz)));
+    float heightRatio = dot((blade.v2.xyz - blade.v0.xyz), blade.up.xyz) / blade.v1.w;
+    float alignment = heightRatio * dirAlignment;
+
+    vec3 totalWind = windInfluence*alignment;
+
+    // Total force
+    // account for v2 being underground 
+    vec3 v2Translation = (r + g + totalWind) * deltaTime;
+
+    float lProj = length(blade.v2.xyz - blade.v0.xyz - blade.up.xyz * dot(blade.v2.xyz - blade.v0.xyz, blade.up.xyz));
+    vec3 v1Pos = blade.v0.xyz + blade.v1.w * blade.up.xyz * max(1 - (lProj/blade.v1.w), 0.05f*max(lProj/blade.v1.w, 1.0f));
+
+    // dist btwn first & last ctrl pt
+    float l0 = length(blade.v2.xyz - blade.v0.xyz);
+    // sum of all dist btwn ctrl pt & subsequent
+    float l1 = length(blade.v1.xyz - blade.v0.xyz) + length(blade.v2.xyz - blade.v1.xyz);
+    // bezier curve of degree 2 
+    float n = 2.0f;
+
+    float bezierLen = (2*l0 + (n-1)*l1)/(n+1);
+
+    float ratio = blade.v1.w / bezierLen;
+
+    vec3 v1Corr = blade.v0.xyz + ratio*(blade.v1.xyz - blade.v0.xyz);
+    vec3 v2Corr = v1Corr + ratio*(blade.v2.xyz - blade.v1.xyz);
+
+    // setting values 
+    grassBlades[index].v1.xyz = v1Corr;
+    grassBlades[index].v2.xyz = v2Corr;
 
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
+
+    // orientation 
+
+
+    // view-frustrum 
+
+
+    // distance
+
+
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
-
-    // temp setup to get grass to render 
-    Blade blade = grassBlades[index];
 
     // adds contents of data to mem (2nd param to first)
     // returns original content of mem before addition (so vertCount - 1)
