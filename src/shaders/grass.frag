@@ -29,5 +29,4 @@ void main() {
     vec3 color = diffuseColor * (ambient + intensity);
 
     outColor = vec4(color, 1.0);
-    
 }

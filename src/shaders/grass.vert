@@ -25,14 +25,13 @@ out gl_PerVertex {
 void main() {
 	// TODO: Write gl_Position and any other shader outputs
 
-    // takes in the input blade model matrix and the Bezier curve inputs (v0, v1, v2). 
-    // Sets gl_Position to be the base position of the blade (model * v0) 
-    // and translates the other Bezier curve inputs to match the correct orientation and position of the blade object.
-
+    // translates the other Bezier curve inputs to match
+    // the correct orientation and position of the blade object.
     out_v0 = model * in_v0;
     out_v1 = model * in_v1;
     out_v2 = model * in_v2;
     out_up = model * in_up;
 
+    // base pos of blade 
     gl_Position = out_v0;
 }

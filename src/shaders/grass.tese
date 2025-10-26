@@ -34,10 +34,6 @@ void main() {
     vec3 b = v1 + v*(v2 - v1); 
     vec3 c = a + v*(b - a); 
 
-    // points to left rn
-    // might have to change to right
-    //vec3 t1 = normalize(cross(v1, up));
-
     float orientation = in_v0[0].w;
     vec3 t1 = normalize(vec3(cos(orientation), 0, -sin(orientation)));
 
@@ -45,6 +41,7 @@ void main() {
     vec3 c0 = c - width*t1;
     vec3 c1 = c + width*t1;
 
+    // clamp to prevent issues where t0 & n invalid numbers
     vec3 t0 = normalize(b-a);
     if (length(b - a) < 1e-5) {
         t0 = up;
@@ -52,7 +49,7 @@ void main() {
 
     vec3 n = normalize(cross(t0, t1));
     if (length(n) < 1e-5) {
-        n = up; // or normalize(cross(up, t1));
+        n = up;
     }
 
     float t = u + 0.5*v - u*v;
