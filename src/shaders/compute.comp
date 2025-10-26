@@ -57,8 +57,18 @@ bool inBounds(float value, float bounds) {
 
 // vary with time 
 // use sinusoidal func
-vec3 simulateWind(vec3 v0, float t) {
-    return vec3(1.0f);
+vec3 simulateWind(vec3 v0, float t, float height) {
+    float strength = 1.0f;
+    //return vec3(strength * sin(t), 0.0f, strength * cos(t));
+    //return vec3(0.5f, 0.0f, 0.5f);
+
+    float windPower = 5.0;
+
+    // Wind direction oscillation through the plane
+    float turbulence = 0.1 * cos(v0.z * 0.2 + totalTime * 1.5); // Noise for irregularity
+    float sway = sin(0.5 * v0.x + totalTime) * height * 0.2; // Height-dependent sway
+
+    return windPower * vec3(sway, 0.0, 0.0);
 }
 
 void main() {
@@ -73,13 +83,23 @@ void main() {
 
     // TODO: Apply forces on every blade and update the vertices in the buffer
 
+    vec3 v0 = blade.v0.xyz;
+    vec3 v1 = blade.v1.xyz;
+    vec3 v2 = blade.v2.xyz;
+    vec3 up = blade.up.xyz;
+
+    float orientation = blade.v0.w;
+    float height = blade.v1.w;
+    float width = blade.v2.w;
+    float stiffness = blade.up.w;
+
     vec3 right = vec3(sin(blade.v0.w), 0.0f, cos(blade.v0.w));
     vec3 front = cross(right, blade.up.xyz);
 
     // Recovery 
     // orig pose of v2 is straight up from v0 
-    vec3 Iv2 = blade.v0.xyz + (blade.v1.w * blade.up.xyz); 
-    vec3 r = (blade.v2.xyz) * blade.up.w;
+    vec3 Iv2 = v0 + (height * up); 
+    vec3 r = (Iv2 - v2) * stiffness;
 
     // Gravity 
     float mass = 1.0f;
@@ -91,37 +111,37 @@ void main() {
     float t = 0.5f;
 
     vec3 gE = mass * (normalize(d.xyz) * d.w * (1 - t) + t);
-    vec3 gF = 0.25f * abs(gE) * front;
+    vec3 gF = 0.25f * length(gE) * front;
     vec3 g = gE + gF;
 
     // Wind 
-    vec3 windInfluence = simulateWind(blade.v0.xyz, deltaTime);
-    float dirAlignment = 1 - abs(dot(normalize(windInfluence), normalize(blade.v2.xyz - blade.v0.xyz)));
-    float heightRatio = dot((blade.v2.xyz - blade.v0.xyz), blade.up.xyz) / blade.v1.w;
+    vec3 windInfluence = simulateWind(v0, deltaTime, height);
+    float dirAlignment = 1 - abs(dot(normalize(windInfluence), normalize(v2 - v0)));
+    float heightRatio = dot((v2 - v0), up) / height;
     float alignment = heightRatio * dirAlignment;
 
     vec3 totalWind = windInfluence*alignment;
 
     // Total force
     // account for v2 being underground 
-    vec3 v2Translation = (r + g + totalWind) * deltaTime;
+    v2 = (r + g + totalWind) * deltaTime;
 
-    float lProj = length(blade.v2.xyz - blade.v0.xyz - blade.up.xyz * dot(blade.v2.xyz - blade.v0.xyz, blade.up.xyz));
-    vec3 v1Pos = blade.v0.xyz + blade.v1.w * blade.up.xyz * max(1 - (lProj/blade.v1.w), 0.05f*max(lProj/blade.v1.w, 1.0f));
+    float lProj = length(v2 - v0 - up * dot(v2 - v0, up));
+    vec3 v1Pos = v0 + height * up * max(1 - (lProj/height), 0.05f*max(lProj/height, 1.0f));
 
     // dist btwn first & last ctrl pt
-    float l0 = length(blade.v2.xyz - blade.v0.xyz);
+    float l0 = length(v2 - v0);
     // sum of all dist btwn ctrl pt & subsequent
-    float l1 = length(blade.v1.xyz - blade.v0.xyz) + length(blade.v2.xyz - blade.v1.xyz);
+    float l1 = length(v1 - v0) + length(v2 - v1);
     // bezier curve of degree 2 
     float n = 2.0f;
 
     float bezierLen = (2*l0 + (n-1)*l1)/(n+1);
 
-    float ratio = blade.v1.w / bezierLen;
+    float ratio = height / bezierLen;
 
-    vec3 v1Corr = blade.v0.xyz + ratio*(blade.v1.xyz - blade.v0.xyz);
-    vec3 v2Corr = v1Corr + ratio*(blade.v2.xyz - blade.v1.xyz);
+    vec3 v1Corr = v0 + ratio*(v1 - v0);
+    vec3 v2Corr = v1Corr + ratio*(v2 - v1);
 
     // setting values 
     grassBlades[index].v1.xyz = v1Corr;
