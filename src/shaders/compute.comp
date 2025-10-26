@@ -57,18 +57,9 @@ bool inBounds(float value, float bounds) {
 
 // vary with time 
 // use sinusoidal func
-vec3 simulateWind(vec3 v0, float t, float height) {
-    float strength = 1.0f;
-    //return vec3(strength * sin(t), 0.0f, strength * cos(t));
-    //return vec3(0.5f, 0.0f, 0.5f);
-
-    float windPower = 5.0;
-
-    // Wind direction oscillation through the plane
-    float turbulence = 0.1 * cos(v0.z * 0.2 + totalTime * 1.5); // Noise for irregularity
-    float sway = sin(0.5 * v0.x + totalTime) * height * 0.2; // Height-dependent sway
-
-    return windPower * vec3(sway, 0.0, 0.0);
+vec3 simulateWind(vec3 v0, float t) {
+    float strength = 3.0f;
+    return vec3(strength * sin(t), 0.0f, 0.0f);
 }
 
 void main() {
@@ -115,7 +106,7 @@ void main() {
     vec3 g = gE + gF;
 
     // Wind 
-    vec3 windInfluence = simulateWind(v0, deltaTime, height);
+    vec3 windInfluence = simulateWind(v0, deltaTime);
     float dirAlignment = 1 - abs(dot(normalize(windInfluence), normalize(v2 - v0)));
     float heightRatio = dot((v2 - v0), up) / height;
     float alignment = heightRatio * dirAlignment;
