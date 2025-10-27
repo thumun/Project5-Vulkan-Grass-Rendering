@@ -43,7 +43,7 @@ bool inBounds(float value, float bounds) {
 // vary with time 
 // use sinusoidal func
 vec3 simulateWind(vec3 v0, float t) {
-    float strength = 1.0f;
+    float strength = 3.0f + 2.0f*cos(t);
     return vec3(strength * sin(t), 0.0f, 0.0f);
 }
 
@@ -81,7 +81,7 @@ void main() {
     float mass = 1.0f;
     // d.xyz = gravity dir 
     // d.w = acceleration 
-    vec4 d = vec4(0.0f, -1.0f, 0.0f, 9.8f);
+    vec4 d = vec4(0.0f, -1.0f, 0.0f, 15.8f);
 
     // user defined param so setting to 0.5
     float t = 0.5f;
@@ -100,7 +100,7 @@ void main() {
 
     // Total force
     // account for v2 being underground 
-    v2 = (r + g + totalWind) * deltaTime;
+    v2 += (r + g + totalWind) * deltaTime;
 
     float lProj = length(v2 - v0 - up * dot(v2 - v0, up));
     vec3 v1Pos = v0 + height * up * max(1 - (lProj/height), 0.05f*max(lProj/height, 1.0f));
