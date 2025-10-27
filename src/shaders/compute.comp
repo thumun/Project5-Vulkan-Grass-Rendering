@@ -47,6 +47,19 @@ vec3 simulateWind(vec3 v0, float t) {
     return vec3(strength * sin(t), 0.0f, 0.0f);
 }
 
+bool checkViewFrustrum(vec3 p)
+ {
+    vec4 ndcP = camera.proj * camera.view * vec4(p, 1.0f); 
+    float t = 0.001;
+    float homogenous = ndcP.w + t;
+
+    // check if each component between -h and homogenous
+
+    return (ndcP.x >= -1 * homogenous && ndcP.x <= homogenous) &&
+           (ndcP.y >= -1 * homogenous && ndcP.y <= homogenous) &&
+           (ndcP.z >= -1 * homogenous && ndcP.z <= homogenous);
+ }
+
 void main() {
 	// Reset the number of blades to 0
     uint index = gl_GlobalInvocationID.x; 
@@ -69,8 +82,8 @@ void main() {
     float width = blade.v2.w;
     float stiffness = blade.up.w;
 
-    vec3 right = vec3(sin(blade.v0.w), 0.0f, cos(blade.v0.w));
-    vec3 front = cross(right, blade.up.xyz);
+    vec3 right = vec3(sin(orientation), 0.0f, cos(orientation));
+    vec3 front = cross(right, up);
 
     // Recovery 
     // orig pose of v2 is straight up from v0 
@@ -127,13 +140,30 @@ void main() {
 	// to the culled blades buffer
 
     // orientation 
+    vec3 camPos = inverse(camera.view)[3].xyz;
 
+    // if abs val of this exceeds 0.9, should be culled
+    if (abs(dot(normalize(camPos) - v0, right)) > 0.9f) {
+        return;
+    }
 
     // view-frustrum 
+    vec3 m = 0.25*v0 + 0.5*v1 + 0.25*v2;
 
+    // considering v0, m, and v2 for this test
+    if (!checkViewFrustrum(v0) && !checkViewFrustrum(m) && !checkViewFrustrum(v2)) {
+        return;
+    }
 
     // distance
+    float dProj = length(v0 - camPos - up * dot(v0 - camPos, up));
+    float dMax = 15.0f;
+    float nLevel = 5.0f; 
 
+    if (dProj > dMax || (mod(index, nLevel) > floor(nLevel * (1 - dProj/dMax)))) 
+    {
+        return;
+    }
 
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
