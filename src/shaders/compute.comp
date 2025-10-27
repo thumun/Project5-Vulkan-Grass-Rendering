@@ -43,8 +43,15 @@ bool inBounds(float value, float bounds) {
 // vary with time 
 // use sinusoidal func
 vec3 simulateWind(vec3 v0, float t) {
-    float strength = 3.0f + 2.0f*cos(t);
-    return vec3(strength * sin(t), 0.0f, 0.0f);
+    float windSpeed = 1.5f;
+    float frequency = 0.7f;
+    // diff based on blade pos
+    float phase = dot(v0.xz, vec2(0.2f, 0.3f));
+    
+    float strength = 3.0f + 2.0f * cos(t + phase);
+    float sway = sin(t * windSpeed + phase * frequency);
+
+    return vec3(strength * sway, 0.0f, 0.0f);
 }
 
 bool checkViewFrustrum(vec3 p)
@@ -143,27 +150,27 @@ void main() {
     vec3 camPos = inverse(camera.view)[3].xyz;
 
     // if abs val of this exceeds 0.9, should be culled
-    if (abs(dot(normalize(camPos) - v0, right)) > 0.9f) {
-        return;
-    }
+    //if (abs(dot(normalize(camPos) - v0, right)) > 0.9f) {
+    //    return;
+    //}
 
     // view-frustrum 
     vec3 m = 0.25*v0 + 0.5*v1 + 0.25*v2;
 
     // considering v0, m, and v2 for this test
-    if (!checkViewFrustrum(v0) && !checkViewFrustrum(m) && !checkViewFrustrum(v2)) {
-        return;
-    }
+    //if (!checkViewFrustrum(v0) && !checkViewFrustrum(m) && !checkViewFrustrum(v2)) {
+    //    return;
+    //}
 
     // distance
     float dProj = length(v0 - camPos - up * dot(v0 - camPos, up));
     float dMax = 15.0f;
     float nLevel = 5.0f; 
 
-    if (dProj > dMax || (mod(index, nLevel) > floor(nLevel * (1 - dProj/dMax)))) 
-    {
-        return;
-    }
+    //if (dProj > dMax || (mod(index, nLevel) > floor(nLevel * (1 - dProj/dMax)))) 
+    //{
+    //    return;
+    //}
 
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
