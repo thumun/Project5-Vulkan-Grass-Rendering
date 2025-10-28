@@ -12,7 +12,7 @@ struct CameraBufferObject {
   float renderSettingEnableGravity = 9.8;
   uint32_t renderSettingEnableWind = 1;
   float orientationCullingThreshold = 0.9f; // zero means disabled
-  uint32_t viewFrustumCullingEnabled = 0;
+  float viewFrustumCullingEnabled = 0.2f;// zero means disabled
   float distanceCullingThreshold = 15.0f; // zero means disabled
 };
 

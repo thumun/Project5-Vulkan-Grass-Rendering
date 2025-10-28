@@ -12,7 +12,7 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
     float renderSettingEnableGravity;
     uint renderSettingEnableWind;
     float orientationCullingThreshold; // zero means disabled
-    uint viewFrustumCullingEnabled;
+    float viewFrustumCullingEnabled;
     float distanceCullingThreshold; // zero means disabled
 } camera;
 
@@ -83,13 +83,12 @@ vec3 simulateWind(vec3 v0, float t) {
     float strength = 3.0f + 2.0f * cos(t + phase);
     float sway = sin(t * windSpeed + phase * frequency);
 
-    return vec3(strength * sway, 0.0f, 0.0f);
+    return vec3(strength * sway, 0.0f, 0.0f) * 10.0f;
 }
 
-bool checkViewFrustrum(vec3 p)
+bool checkViewFrustrum(vec3 p, float t)
  {
     vec4 ndcP = camera.proj * camera.view * vec4(p, 1.0f); 
-    float t = 0.2;
     float homogenous = ndcP.w + t;
 
     // check if each component between -h and homogenous
@@ -197,10 +196,10 @@ void main() {
     }
 
     // view-frustrum
-    if (camera.viewFrustumCullingEnabled > 0) {
+    if (camera.viewFrustumCullingEnabled > 0.0f) {
         vec3 m = 0.25*v0 + 0.5*v1 + 0.25*v2;
          //considering v0, m, and v2 for this test
-        if (!checkViewFrustrum(v0) && !checkViewFrustrum(m) && !checkViewFrustrum(v2)) {
+        if (!checkViewFrustrum(v0, camera.viewFrustumCullingEnabled) && !checkViewFrustrum(m, camera.viewFrustumCullingEnabled) && !checkViewFrustrum(v2, camera.viewFrustumCullingEnabled)) {
             return;
         }
     }
@@ -209,7 +208,7 @@ void main() {
     if(camera.distanceCullingThreshold > 0.0f)
     {
         float dProj = length(viewDirection);//length(v0 - camPos - up * dot(v0 - camPos, up));
-        float dMax = 15.0f;
+        float dMax = camera.distanceCullingThreshold;
         int nLevel = 5; 
 
         if (dProj > dMax || (mod(index, nLevel) > floor(nLevel * (1 - dProj/dMax)))) {

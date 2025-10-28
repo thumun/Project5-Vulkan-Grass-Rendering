@@ -11,7 +11,7 @@ layout(set = 0, binding = 0) uniform CameraBufferObject {
     float renderSettingEnableGravity;
     uint renderSettingEnableWind;
     float orientationCullingThreshold; // zero means disabled
-    uint viewFrustumCullingEnabled;
+    float viewFrustumCullingEnabled;
     float distanceCullingThreshold; // zero means disabled
 } camera;
 
