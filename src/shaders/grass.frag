@@ -17,7 +17,7 @@ layout(location = 0) out vec4 outColor;
 void main() {
     // TODO: Compute fragment color
 
-    vec3 lightPos = normalize(vec3(0.0, 5.0, 0.0));
+    vec3 lightPos = normalize(vec3(20.0, 20.0, 5.0));
     float intensity = clamp(dot(normalize(in_normal), normalize(in_pos - lightPos)), 0.0, 1.0);
     
     vec3 top = vec3(0.82, 0.859, 0.537);

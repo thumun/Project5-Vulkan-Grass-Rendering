@@ -7,6 +7,13 @@ layout(local_size_x = WORKGROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 layout(set = 0, binding = 0) uniform CameraBufferObject {
     mat4 view;
     mat4 proj;
+    uint tessellationLODEnabled;
+    uint renderSettingEnableRecovery;
+    float renderSettingEnableGravity;
+    uint renderSettingEnableWind;
+    float orientationCullingThreshold; // zero means disabled
+    uint viewFrustumCullingEnabled;
+    float distanceCullingThreshold; // zero means disabled
 } camera;
 
 layout(set = 1, binding = 0) uniform Time {
@@ -36,15 +43,40 @@ layout(set = 2, binding = 2) buffer NumBlades {
  	  uint firstInstance; // = 0
 } numBlades;
 
-bool inBounds(float value, float bounds) {
-    return (value >= -bounds) && (value <= bounds);
+//https://www.shadertoy.com/view/4dS3Wd
+float hash(float n) { return fract(sin(n) * 1e4); }
+float hash(vec2 p) { return fract(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
+
+float noise(float x) {
+	float i = floor(x);
+	float f = fract(x);
+	float u = f * f * (3.0 - 2.0 * f);
+	return mix(hash(i), hash(i + 1.0), u);
+}
+
+float noise(vec2 x) {
+	vec2 i = floor(x);
+	vec2 f = fract(x);
+
+	float a = hash(i);
+	float b = hash(i + vec2(1.0, 0.0));
+	float c = hash(i + vec2(0.0, 1.0));
+	float d = hash(i + vec2(1.0, 1.0));
+
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
 // vary with time 
 // use sinusoidal func
 vec3 simulateWind(vec3 v0, float t) {
-    float windSpeed = 1.5f;
-    float frequency = 0.7f;
+    float windSpeed = 5.5f;
+    float frequency = 2.7f;
+
+    float temp1 = noise(v0.xz + vec2(2.0f, windSpeed * t));
+    float temp2 = noise(v0.xz + vec2(windSpeed * t, 0.0f));
+    return vec3(temp1 - 0.5f, 0.0f, temp2 - 0.5f) * 20.0f;
+
     // diff based on blade pos
     float phase = dot(v0.xz, vec2(0.2f, 0.3f));
     
@@ -57,11 +89,10 @@ vec3 simulateWind(vec3 v0, float t) {
 bool checkViewFrustrum(vec3 p)
  {
     vec4 ndcP = camera.proj * camera.view * vec4(p, 1.0f); 
-    float t = 0.001;
+    float t = 0.2;
     float homogenous = ndcP.w + t;
 
     // check if each component between -h and homogenous
-
     return (ndcP.x >= -1 * homogenous && ndcP.x <= homogenous) &&
            (ndcP.y >= -1 * homogenous && ndcP.y <= homogenous) &&
            (ndcP.z >= -1 * homogenous && ndcP.z <= homogenous);
@@ -89,38 +120,47 @@ void main() {
     float width = blade.v2.w;
     float stiffness = blade.up.w;
 
-    vec3 right = vec3(sin(orientation), 0.0f, cos(orientation));
-    vec3 front = cross(right, up);
+    vec3 right = vec3(cos(orientation), 0.0f, -sin(orientation));
+    vec3 front = normalize(cross(right, up));
 
     // Recovery 
-    // orig pose of v2 is straight up from v0 
-    vec3 Iv2 = v0 + (height * up); 
-    vec3 r = (Iv2 - v2) * stiffness;
+    vec3 recoveryCoeff = vec3(0.0f);
+    if (camera.renderSettingEnableRecovery > 0) {       
+        // orig pose of v2 is straight up from v0 
+        vec3 Iv2 = v0 + (height * up); 
+        recoveryCoeff = (Iv2 - v2) * stiffness;
+    }
 
-    // Gravity 
-    float mass = 1.0f;
-    // d.xyz = gravity dir 
-    // d.w = acceleration 
-    vec4 d = vec4(0.0f, -1.0f, 0.0f, 15.8f);
+    // Gravity
+    vec3 totalGravity = vec3(0.0f);
+    if(camera.renderSettingEnableGravity > 0.0f)
+    {
+        float mass = 1.0f;
+        // d.xyz = gravity dir 
+        // d.w = acceleration 
+        // user defined param so setting to 0.5
+        //float t = 0.5f;
 
-    // user defined param so setting to 0.5
-    float t = 0.5f;
+        vec3 gE = mass * vec3(0.0f, -camera.renderSettingEnableGravity, 0.0f);;
+        vec3 gF = 0.25f * length(gE) * front;
+        totalGravity = gE + gF;
+    }
 
-    vec3 gE = mass * (normalize(d.xyz) * d.w * (1 - t) + t);
-    vec3 gF = 0.25f * length(gE) * front;
-    vec3 g = gE + gF;
+    // Wind
+    vec3 totalWind = vec3(0.0f);
+    if(camera.renderSettingEnableWind > 0) {
+        vec3 windInfluence = simulateWind(v0, totalTime);
+        float dirAlignment = 1 - abs(dot(normalize(windInfluence), normalize(v2 - v0)));
+        float heightRatio = dot((v2 - v0), up) / height;
+        float alignment = heightRatio * dirAlignment;
 
-    // Wind 
-    vec3 windInfluence = simulateWind(v0, totalTime);
-    float dirAlignment = 1 - abs(dot(normalize(windInfluence), normalize(v2 - v0)));
-    float heightRatio = dot((v2 - v0), up) / height;
-    float alignment = heightRatio * dirAlignment;
-
-    vec3 totalWind = windInfluence*alignment;
+        totalWind = windInfluence*alignment;
+    }
 
     // Total force
     // account for v2 being underground 
-    v2 += (r + g + totalWind) * deltaTime;
+    vec3 delta = (recoveryCoeff + totalGravity + totalWind) * deltaTime;
+    v2 += delta;
 
     float lProj = length(v2 - v0 - up * dot(v2 - v0, up));
     vec3 v1Pos = v0 + height * up * max(1 - (lProj/height), 0.05f*max(lProj/height, 1.0f));
@@ -132,7 +172,7 @@ void main() {
     // bezier curve of degree 2 
     float n = 2.0f;
 
-    float bezierLen = (2*l0 + (n-1)*l1)/(n+1);
+    float bezierLen = (n*l0 + (n-1)*l1)/(n+1);
 
     float ratio = height / bezierLen;
 
@@ -145,32 +185,37 @@ void main() {
 
 	// TODO: Cull blades that are too far away or not in the camera frustum and write them
 	// to the culled blades buffer
-
-    // orientation 
     vec3 camPos = inverse(camera.view)[3].xyz;
 
-    // if abs val of this exceeds 0.9, should be culled
-    //if (abs(dot(normalize(camPos) - v0, right)) > 0.9f) {
-    //    return;
-    //}
+    // orientation 
+    vec3 towardsBlade = v0 - camPos;
+    vec3 viewDirection = towardsBlade - up * dot(towardsBlade, up);
+    if(camera.orientationCullingThreshold > 0.0f) {   
+        if (abs(dot(normalize(viewDirection), right)) > camera.orientationCullingThreshold) {
+            return;
+        }
+    }
 
-    // view-frustrum 
-    vec3 m = 0.25*v0 + 0.5*v1 + 0.25*v2;
-
-    // considering v0, m, and v2 for this test
-    //if (!checkViewFrustrum(v0) && !checkViewFrustrum(m) && !checkViewFrustrum(v2)) {
-    //    return;
-    //}
+    // view-frustrum
+    if (camera.viewFrustumCullingEnabled > 0) {
+        vec3 m = 0.25*v0 + 0.5*v1 + 0.25*v2;
+         //considering v0, m, and v2 for this test
+        if (!checkViewFrustrum(v0) && !checkViewFrustrum(m) && !checkViewFrustrum(v2)) {
+            return;
+        }
+    }
 
     // distance
-    float dProj = length(v0 - camPos - up * dot(v0 - camPos, up));
-    float dMax = 15.0f;
-    float nLevel = 5.0f; 
+    if(camera.distanceCullingThreshold > 0.0f)
+    {
+        float dProj = length(viewDirection);//length(v0 - camPos - up * dot(v0 - camPos, up));
+        float dMax = 15.0f;
+        int nLevel = 5; 
 
-    //if (dProj > dMax || (mod(index, nLevel) > floor(nLevel * (1 - dProj/dMax)))) 
-    //{
-    //    return;
-    //}
+        if (dProj > dMax || (mod(index, nLevel) > floor(nLevel * (1 - dProj/dMax)))) {
+            return;
+        }
+    }
 
 	// Note: to do this, you will need to use an atomic operation to read and update numBlades.vertexCount
 	// You want to write the visible blades to the buffer without write conflicts between threads
