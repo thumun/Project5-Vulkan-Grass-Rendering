@@ -3,10 +3,31 @@ Vulkan Grass Rendering
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Neha Thumu
+  * [LinkedIn](https://www.linkedin.com/in/neha-thumu/)
+* Tested on: Windows 11 Pro, i9-13900H @ 2.60GHz 32GB, Nvidia GeForce RTX 4070
 
-### (TODO: Your README)
+## Project Details
+### Grass Rendering 
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+### Simulating Forces 
+#### Gravity 
+#### Recovery
+#### Wind
+
+### Culling 
+#### Occlusion
+#### View-Frustrum
+#### Distance 
+
+### Level of Detail 
+
+### GUI
+
+## Performance Analysis 
+
+## Resources Used 
+- add shadertoy used for noise
+- add research paper
+- recitation
+- opengl tutorial for tessalation 
