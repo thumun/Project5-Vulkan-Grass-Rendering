@@ -35,6 +35,9 @@ We use the above data to construct the individual grass blades via De Casteljau'
 #### Recovery
 (add gif) 
 
+The recovery force is a counterforce against the applied forces of gravity and wind. This logic follows Hooke's Law. We take the difference of the initial position of the grass blade and the current position and apply the stiffness coefficient to create this force: 
+
+<img width="187" height="45" alt="image" src="https://github.com/user-attachments/assets/81619755-047e-4fb4-a1ed-f13e7d57440a" />
 
 #### Gravity 
 (add gif)
@@ -49,26 +52,36 @@ On the other hand, front gravity is blade specific-which means it uses the front
 
 <img width="172" height="45" alt="image" src="https://github.com/user-attachments/assets/f4d56cdd-0516-40f8-88fd-bf7e08500f9f" />
 
-(add equations) 
-
 #### Wind
 (add gif)
 
+The wind utilizes an analytic function to control the direction of the wind force. In this case, the function utilizes noise in combination with sinusodial functions to mimic a breeze. We then take this function to find the directional alignment of the wind. We also calculate a height ratio which indicated the "straightness of the blade with respect to the up vector of the blade" - this is used to apply a stronger affect on blades that are at the resting/initial position.
+
 <img width="516" height="172" alt="image" src="https://github.com/user-attachments/assets/2b4f67fa-281e-47ec-8117-c9ac037ba392" />
+
+Then we combine the forces together to create our total wind force.
 
 <img width="300" height="44" alt="image" src="https://github.com/user-attachments/assets/792eb4ba-7b5b-4ca8-8195-532a46a227c3" />
 
 ### Culling 
-#### Occlusion
+#### Orientation
 (add gif)
+
+Orientation based culling allows for grass blades that are parallel to the view direction of the camera to be optimized away. As these blades would not be visible anyways due to the blades not having a thickness. We accomplish this by taking the dot product of the view direction and the direction of the blade and comparing it with a threshold value. 
+
+<img width="388" height="50" alt="image" src="https://github.com/user-attachments/assets/e559f222-5803-4cf8-92f2-8716abfae15f" />
 
 #### View-Frustrum
 (add gif)
 
+View-Frustrum culling 
+
 #### Distance 
 (add gif)
 
-### Level of Detail 
+Distance culling
+
+### Level of Detail
 (add gif)
 
 ### GUI
