@@ -74,23 +74,26 @@ Orientation based culling allows for grass blades that are parallel to the view 
 #### View-Frustrum
 (add gif)
 
-View-Frustrum culling 
+View-Frustrum culling takes care of blades that are outside of the camera's view-frustrum. We check to make sure that three points on the blade: v0, m (the midpoint of a curve composed of the three points), and v2 are all in the frustrum otherwise the blade is culled.
+
+<img width="234" height="58" alt="image" src="https://github.com/user-attachments/assets/13faf523-f387-4c9d-8a63-5dedd3c17db7" />
+
+We  want to ensure that all of our points are in NDC space prior to comparing with our homogenouse coordinate, h. There is also an arbitrary threshold, t, that is taken into account when comparing the points with the frustrum.
+
+<img width="447" height="115" alt="image" src="https://github.com/user-attachments/assets/1f513433-a586-4419-939c-c193ec0d36b7" />
 
 #### Distance 
 (add gif)
 
-Distance culling
+Distance culling is where we cull blades based on their distance from the camera.
 
 ### Level of Detail
-(add gif)
-
-### GUI
 (add gif)
 
 ## Performance Analysis 
 
 ## Resources Used 
 - add shadertoy used for noise
-- add research paper ; diagram also from here 
+- add research paper ; diagrams also from here 
 - recitation
 - opengl tutorial for tessalation 
