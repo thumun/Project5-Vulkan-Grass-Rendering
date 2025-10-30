@@ -78,17 +78,22 @@ View-Frustrum culling takes care of blades that are outside of the camera's view
 
 <img width="234" height="58" alt="image" src="https://github.com/user-attachments/assets/13faf523-f387-4c9d-8a63-5dedd3c17db7" />
 
-We  want to ensure that all of our points are in NDC space prior to comparing with our homogenouse coordinate, h. There is also an arbitrary threshold, t, that is taken into account when comparing the points with the frustrum.
+We  want to ensure that all of our points are in NDC space prior to comparing with our homogenous coordinate, h. There is also an arbitrary threshold, t, that is taken into account when comparing the points with the frustrum.
 
 <img width="447" height="115" alt="image" src="https://github.com/user-attachments/assets/1f513433-a586-4419-939c-c193ec0d36b7" />
 
 #### Distance 
 (add gif)
 
-Distance culling is where we cull blades based on their distance from the camera.
+Distance culling is where we cull blades based on their distance from the camera. In this implementation we use the distance from the camera to a blade (dproj), a maximum distance (where all grass beyond this distance will be culled), and buckets that our blades are sorted into such that the blades in the farther buckets are culled.
+<img width="316" height="38" alt="image" src="https://github.com/user-attachments/assets/3b6a8327-4144-4f5e-9df8-6b318506f997" />
+
+<img width="388" height="67" alt="image" src="https://github.com/user-attachments/assets/f212054e-02a8-409f-ac43-4b030cac7abe" />
 
 ### Level of Detail
 (add gif)
+
+A tesselation control shader is used to provide varying amounts of detail for our grass blades depending on how far they are from our camera. The blades closest to our camera have more verticies/detail while those farther away are simplified - this can be seen more clearly in the above gif. This is done via a smoothstep function in order to smoothly transition from varying levels of detail rather than have clear patches of grass of different verticies.
 
 ## Performance Analysis 
 
