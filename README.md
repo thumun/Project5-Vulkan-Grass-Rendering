@@ -14,7 +14,7 @@ Vulkan Grass Rendering
 This project is based on the following paper [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) and was built using the Vulkan API. We use various forces to simulate the movement of the grass and employ culling methods along with tesselation to optimize the process.
 
 ### Rendering the Grass
-(add gif of grass with no forces) 
+![still](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/stillgrass.gif?raw=true)
 
 The grass in this project is represented as bezier curves composed of three control points: v0, v1, and v2. 
 - v0: the position of the grass blade on the geometry (or ground)
@@ -32,16 +32,14 @@ The blades also have the following properties:
 We use the above data to construct the individual grass blades via De Casteljau's algorithm as well as simulate the movement of the blades.
 
 ### Simulating Forces 
-#### Recovery
-(add gif) 
+![forces](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/forces.gif?raw=true)
 
+#### Recovery
 The recovery force is a counterforce against the applied forces of gravity and wind. This logic follows Hooke's Law. We take the difference of the initial position of the grass blade and the current position and apply the stiffness coefficient to create this force: 
 
 <img width="187" height="45" alt="image" src="https://github.com/user-attachments/assets/81619755-047e-4fb4-a1ed-f13e7d57440a" />
 
 #### Gravity 
-(add gif)
-
 The gravitational force is a combination of environmental gravity annd front gravity. Environmental gravity is a global force that affects all the blades in the scene. In this case, it is a downwards pull of a constant value. 
 
 <img width="534" height="91" alt="image" src="https://github.com/user-attachments/assets/05b32bce-4407-48a5-bd7d-c68f1e1a8af4" />
@@ -53,8 +51,6 @@ On the other hand, front gravity is blade specific-which means it uses the front
 <img width="172" height="45" alt="image" src="https://github.com/user-attachments/assets/f4d56cdd-0516-40f8-88fd-bf7e08500f9f" />
 
 #### Wind
-(add gif)
-
 The wind utilizes an analytic function to control the direction of the wind force. In this case, the function utilizes noise in combination with sinusodial functions to mimic a breeze. We then take this function to find the directional alignment of the wind. We also calculate a height ratio which indicated the "straightness of the blade with respect to the up vector of the blade" - this is used to apply a stronger affect on blades that are at the resting/initial position.
 
 <img width="516" height="172" alt="image" src="https://github.com/user-attachments/assets/2b4f67fa-281e-47ec-8117-c9ac037ba392" />
@@ -65,14 +61,14 @@ Then we combine the forces together to create our total wind force.
 
 ### Culling 
 #### Orientation
-(add gif)
+![orientation](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/orientation.gif?raw=true)
 
 Orientation based culling allows for grass blades that are parallel to the view direction of the camera to be optimized away. As these blades would not be visible anyways due to the blades not having a thickness. We accomplish this by taking the dot product of the view direction and the direction of the blade and comparing it with a threshold value. 
 
 <img width="388" height="50" alt="image" src="https://github.com/user-attachments/assets/e559f222-5803-4cf8-92f2-8716abfae15f" />
 
 #### View-Frustrum
-(add gif)
+1[viewfrustrum](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/viewfrustrum.gif?raw=true)
 
 View-Frustrum culling takes care of blades that are outside of the camera's view-frustrum. We check to make sure that three points on the blade: v0, m (the midpoint of a curve composed of the three points), and v2 are all in the frustrum otherwise the blade is culled.
 
@@ -82,8 +78,10 @@ We  want to ensure that all of our points are in NDC space prior to comparing wi
 
 <img width="447" height="115" alt="image" src="https://github.com/user-attachments/assets/1f513433-a586-4419-939c-c193ec0d36b7" />
 
+In the gif above, the culling is very subtle as it culls blades that are outside the camera's frustrum. The culling can be seen on the edges of the grass plane.
+
 #### Distance 
-(add gif)
+![dist](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/distanceculling.gif?raw=true)
 
 Distance culling is where we cull blades based on their distance from the camera. In this implementation we use the distance from the camera to a blade (dproj), a maximum distance (where all grass beyond this distance will be culled), and buckets that our blades are sorted into such that the blades in the farther buckets are culled.
 <img width="316" height="38" alt="image" src="https://github.com/user-attachments/assets/3b6a8327-4144-4f5e-9df8-6b318506f997" />
@@ -91,7 +89,7 @@ Distance culling is where we cull blades based on their distance from the camera
 <img width="388" height="67" alt="image" src="https://github.com/user-attachments/assets/f212054e-02a8-409f-ac43-4b030cac7abe" />
 
 ### Level of Detail
-(add gif)
+![lod](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/tesselation.gif?raw=true)
 
 A tesselation control shader is used to provide varying amounts of detail for our grass blades depending on how far they are from our camera. The blades closest to our camera have more verticies/detail while those farther away are simplified - this can be seen more clearly in the above gif. This is done via a smoothstep function in order to smoothly transition from varying levels of detail rather than have clear patches of grass of different verticies.
 
