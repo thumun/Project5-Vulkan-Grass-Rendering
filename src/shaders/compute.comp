@@ -190,7 +190,7 @@ void main() {
     vec3 towardsBlade = v0 - camPos;
     vec3 viewDirection = towardsBlade - up * dot(towardsBlade, up);
     if(camera.orientationCullingThreshold > 0.0f) {   
-        if (abs(dot(normalize(viewDirection), right)) > camera.orientationCullingThreshold) {
+        if (abs(dot(normalize(viewDirection), right)) < camera.orientationCullingThreshold) {
             return;
         }
     }
