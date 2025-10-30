@@ -199,7 +199,7 @@ void main() {
     if (camera.viewFrustumCullingEnabled > 0.0f) {
         vec3 m = 0.25*v0 + 0.5*v1 + 0.25*v2;
          //considering v0, m, and v2 for this test
-        if (!checkViewFrustrum(v0, camera.viewFrustumCullingEnabled) && !checkViewFrustrum(m, camera.viewFrustumCullingEnabled) && !checkViewFrustrum(v2, camera.viewFrustumCullingEnabled)) {
+        if (!checkViewFrustrum(v0, camera.viewFrustumCullingEnabled) || !checkViewFrustrum(m, camera.viewFrustumCullingEnabled) || !checkViewFrustrum(v2, camera.viewFrustumCullingEnabled)) {
             return;
         }
     }

@@ -9,7 +9,7 @@ struct CameraBufferObject {
   glm::mat4 projectionMatrix;
   uint32_t tessellationLODEnabled = 0;
   uint32_t renderSettingEnableRecovery = 1;
-  float renderSettingEnableGravity = 9.8;
+  float renderSettingEnableGravity = 9.8f;
   uint32_t renderSettingEnableWind = 1;
   float orientationCullingThreshold = 0.9f; // zero means disabled
   float viewFrustumCullingEnabled = 0.2f;// zero means disabled

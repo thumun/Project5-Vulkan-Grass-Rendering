@@ -5,6 +5,10 @@
 #include "Camera.h"
 #include "Scene.h"
 #include "Image.h"
+#include <string>
+#include <iostream>
+#include <memory>
+#include <sstream>
 
 Device* device;
 SwapChain* swapChain;
@@ -66,8 +70,13 @@ namespace {
 }
 
 int main() {
+    double fps = 0;
+    double timebase = 0;
+    int frame = 0;
+    const char* title = "Vulkan Grass Rendering";
+
     static constexpr char* applicationName = "Vulkan Grass Rendering";
-    InitializeWindow(640, 480, applicationName);
+    InitializeWindow(640, 640, applicationName);
 
     unsigned int glfwExtensionCount = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -90,7 +99,7 @@ int main() {
 
     swapChain = device->CreateSwapChain(surface, 5);
 
-    camera = new Camera(device, 640.f / 480.f);
+    camera = new Camera(device, 640.f / 640.f);
 
     VkCommandPoolCreateInfo transferPoolInfo = {};
     transferPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -147,6 +156,19 @@ int main() {
         glfwPollEvents();
         scene->UpdateTime();
         renderer->Frame();
+        frame++;
+        double time = glfwGetTime();
+
+        if (time - timebase > 1.0) {
+            fps = frame / (time - timebase);
+            timebase = time;
+            frame = 0;
+        }
+
+        std::ostringstream ss;
+        ss.precision(1);
+        ss << std::fixed << title << " [" << fps << " fps] ";
+        glfwSetWindowTitle(GetGLFWWindow(), ss.str().c_str());
     }
 
     vkDeviceWaitIdle(device->GetVkDevice());

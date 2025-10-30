@@ -48,14 +48,20 @@ void main() {
 	// TODO: Set level of tesselation
     float tessLevel = 5.0;
     if(camera.tessellationLODEnabled > 0) {
-        // Compute distance-based tessellation level
         vec3 v0 = in_v0[gl_InvocationID].xyz;
         vec3 camPos = inverse(camera.view)[3].xyz;
         float dist = length(v0 - camPos);
 
-        tessLevel = dist < 10.0 ? 18.0 :
-                    dist < 20.0 ? 9.0 :
-                    5.0;
+        int near = 2;
+        int far = 15;
+        float tessVal = smoothstep(near, far, dist);
+
+        int high = 12;
+        int low = 1;
+
+        // obj close to the camera have high
+        // far obj have low 
+        tessLevel = int(mix(high, low, tessVal));
     }
 
     gl_TessLevelInner[0] = tessLevel;
