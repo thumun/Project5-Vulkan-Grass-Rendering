@@ -115,7 +115,7 @@ The first chart depicts the renderer's performance as the number of blades incre
 The second chart depicts the effect of the various culling methods on the FPS as the number of blades increases. There is a general trend (as expected) of the FPS going down for all the methods as the number of blades increases. However, it is worth noting that each of the culling methods result in a better FPS than the base renderer (however small that increase may be). It is interesting to look at how for the case of all of the culling methods in tandem and distance, there is a worse FPS than having no culling at all. I imagine that may be due to having extra computation that may not be necessary for a lower number of blades. It is also curious that orientation seems to be the best method in general while view-frustrum improves as the number of blades increases. The most optimal number of blades for each of the methods appears to be 2^14 or 2^16.
 
 ## Resources Used 
-- ![Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) : the research paper that this project is based on and the diagrams above are sourced from here 
+- [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) : the research paper that this project is based on and the diagrams above are sourced from here 
 - 5650 class material (recitation)
-- ![Noise Shadertoy](https://www.shadertoy.com/view/4dS3Wd)
-- ![OpenGL tutorial for tessalation](https://learnopengl.com/Guest-Articles/2021/Tessellation/Tessellation)
+- [Noise Shadertoy](https://www.shadertoy.com/view/4dS3Wd)
+- [OpenGL tutorial for tessalation](https://learnopengl.com/Guest-Articles/2021/Tessellation/Tessellation)
