@@ -68,7 +68,7 @@ Orientation based culling allows for grass blades that are parallel to the view 
 <img width="388" height="50" alt="image" src="https://github.com/user-attachments/assets/e559f222-5803-4cf8-92f2-8716abfae15f" />
 
 #### View-Frustrum
-1[viewfrustrum](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/viewfrustrum.gif?raw=true)
+![viewfrustrum](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/viewfrustrum.gif?raw=true)
 
 View-Frustrum culling takes care of blades that are outside of the camera's view-frustrum. We check to make sure that three points on the blade: v0, m (the midpoint of a curve composed of the three points), and v2 are all in the frustrum otherwise the blade is culled.
 
