@@ -7,7 +7,7 @@ Vulkan Grass Rendering
   * [LinkedIn](https://www.linkedin.com/in/neha-thumu/)
 * Tested on: Windows 11 Pro, i9-13900H @ 2.60GHz 32GB, Nvidia GeForce RTX 4070
 
-(add gif)
+![main](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/grassmain.gif?raw=true)
 
 ## Project Details
 
@@ -95,8 +95,27 @@ A tesselation control shader is used to provide varying amounts of detail for ou
 
 ## Performance Analysis 
 
+Number of Blades vs FPS | Culling Methods vs FPS |
+:-------------------------:|:-------------------------:|
+![bladevsfps](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/numbladesvsfps.png?raw=true) | ![cullingmethods](https://github.com/thumun/Project5-Vulkan-Grass-Rendering/blob/main/img/cullingmethods.png?raw=true) |
+
+Here is a table version of the data presented in the charts above:
+
+Number of Blades | None | Orientation | View-Frustrum | Distance | All |
+:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+2^10 | 624.8 | 528.3 | 626.6 | 223.3 | 248.8 |
+2^12 | 594.6 | 596.6 | 633.4 | 419.7 | 512.2 |
+2^14 | 504.4 |	605.6 |	572.2 |	590.3 |	604.3 |
+2^16 | 287.1 |	565.5 |	412.9 |	619.7 |	622.9 |
+2^18 | 98.4 |	311.3 |	151.7 |	407.5 |	562.5 |
+2^20 | 29.9 |	105.1 |	44.2 |	105.3 |	421.0 |
+
+The first chart depicts the renderer's performance as the number of blades increases while having no additional optimization methods (culling). As the blade count increases, the FPS gets lower as expected. The renderer is able to effectively simulate the grass until there is 2^16 blades of grass in the scene-at this point, the FPS drops to approximately 287 - which is still workable. The worse frame rates can be seen beyond this point. 
+
+The second chart depicts the effect of the various culling methods on the FPS as the number of blades increases. There is a general trend (as expected) of the FPS going down for all the methods as the number of blades increases. However, it is worth noting that each of the culling methods result in a better FPS than the base renderer (however small that increase may be). It is interesting to look at how for the case of all of the culling methods in tandem and distance, there is a worse FPS than having no culling at all. I imagine that may be due to having extra computation that may not be necessary for a lower number of blades. It is also curious that orientation seems to be the best method in general while view-frustrum improves as the number of blades increases. The most optimal number of blades for each of the methods appears to be 2^14 or 2^16.
+
 ## Resources Used 
-- add shadertoy used for noise
-- add research paper ; diagrams also from here 
-- recitation
-- opengl tutorial for tessalation 
+- ![Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) : the research paper that this project is based on and the diagrams above are sourced from here 
+- 5650 class material (recitation)
+- ![Noise Shadertoy](https://www.shadertoy.com/view/4dS3Wd)
+- ![OpenGL tutorial for tessalation](https://learnopengl.com/Guest-Articles/2021/Tessellation/Tessellation)
